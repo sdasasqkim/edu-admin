@@ -57,10 +57,10 @@ npm run build
 ```
 
 ## 📚 Documentation
-React Docs
-Firebase Docs
-React Router
-Bootstrap
+React Docs  
+Firebase Docs  
+React Router  
+Bootstrap  
 Recharts
 
 ## 👨‍💻 Author
