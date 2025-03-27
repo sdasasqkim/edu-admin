@@ -1,0 +1,136 @@
+.memo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    max-width: 900px;
+    margin: 20px auto 0 auto;
+    border: 2px solid #54779c; 
+    border-radius: 5px;
+    overflow: hidden; 
+    background-color: white; 
+    transition: background-color 0.3s ease;
+}
+
+/*  제목 입력 필드 */
+.memo-title {
+    width: 100%;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-bottom: 2px solid #54779c;
+    outline: none;
+}
+
+/* 내용 입력 필드 */
+.memo-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    resize: vertical;
+}
+
+.memo-title:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 91, 187, 0.5);
+    outline: none;
+}
+
+.memo-textarea:focus {
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 91, 187, 0.5);
+    outline: none;
+}
+
+.memo-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 10px;
+}
+
+/* 저장, 초기화 버튼 스타일 */
+.memo-save-btn, .memo-reset-btn {
+    padding: 8px 16px;
+    border: none;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.memo-save-btn { background-color: #007bff; color: white; }
+.memo-reset-btn { background-color: #ccc; color: black; }
+
+/* 메모 목록 스타일 (4개씩 한 줄 배치) */
+.memo-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 20px;
+    padding: 20px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+/* 개별 메모 스타일 */
+.memo-item {
+    padding: 15px;
+    height: 150px;
+    border-radius: 4px;
+    text-align: center;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 연한 색상의 배경색 */
+:root {
+    --memo-red: #ffe6e6;   
+    --memo-orange: #ffebcc;
+    --memo-yellow: #fff9cc;
+    --memo-green: #e6ffe6;
+    --memo-blue: #e6f5ff;
+    --memo-indigo: #e6e6ff;
+    --memo-purple: #f0e6ff;
+}
+
+.memo-item:hover {
+    transform: scale(1.05);
+}
+
+.memo-text {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.memo-actions {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.memo-item:hover .memo-actions {
+    display: block;
+}
+
+.edit-btn, .delete-btn {
+    margin-left: 5px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.edit-btn { background-color: #007bff; color: white; }
+.delete-btn { background-color: #eb3346; color: white; }

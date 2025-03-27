@@ -1,0 +1,141 @@
+html, body {
+    overflow: hidden;
+    height: 100%;
+}
+
+.home-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    width: 100vw; /* 전체 너비를 차지 */
+}
+
+
+/* 1(학원이름)과 2(네비게이션 바) 높이 고정 */
+.top-row {
+    height: 70px; /* 원하는 높이로 조정 가능 */
+}
+
+/* 1 (학원이름) */
+.brand-box {
+    background-color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+    height: 100%;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 2 (네비게이션 바) - 살짝 진한 그림자 */
+.custom-navbar {
+    background-color: #F0F0F0;
+    height: 100%;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); 
+}
+
+/* 3 (사이드바 메뉴) */
+.menu-box {
+    background-color: #E0E0E0;
+    padding: 20px;
+    height: calc(100vh - 70px);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2); 
+}
+.menu-box h5{
+    margin-bottom: 30px;
+}
+
+/* 4 (콘텐츠 영역) */
+.content-box {
+    background-color: #eeeeee;
+    height: calc(100vh - 70px);
+    padding: 20px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+/* 블로그 버튼 */
+.blog-link {
+    padding: 8px 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 5px;
+}
+.blog-link:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* 과목 버튼 */
+.subject-btn {
+    border-radius: 10px;
+    font-weight: 500;
+    padding: 10px 26px;
+    border: none;
+}
+
+/* 과목 버튼 색상 */
+.english { background-color: #FFB6C1; }
+.math { background-color: #778BEB; }
+.all { background-color: #775c5c; }
+
+.english:hover { background-color: #FF7690; transform: scale(1.05); }
+.math:hover { background-color: #4A66D1; transform: scale(1.05); }
+.all:hover { background-color: #5E3F3F; transform: scale(1.05); }
+
+
+
+/* 로그아웃 버튼 */
+.logout-btn {
+    background-color: #0098FF;
+    color: white;
+    font-weight: 400px;
+    padding: 8px 16px;
+}
+
+
+.custom-nav-link {
+    color: #6c757d; 
+    font-weight: 530;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* 네비게이션 아이콘 스타일 */
+.custom-nav-link img {
+    filter: grayscale(50%) brightness(0.7);
+    transition: filter 0.3s ease;
+}
+
+/* 선택된 상태 (Active) */
+.custom-nav-link.active {
+    color: #007bff !important;
+    background-color: rgba(0, 123, 255, 0.08);
+    position: relative;
+}
+
+/* 왼쪽 파란색 바에 그라디언트 효과 */
+.custom-nav-link.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px; 
+    height: 100%;
+    background: linear-gradient(to right, #72acea, rgba(0, 123, 255, 0)); 
+    border-radius: 2px; 
+}
+
+
+/* 선택된 상태일 때 아이콘 변경 */
+.custom-nav-link.active img {
+    filter: none; 
+}
+
+.custom-nav-link:hover {
+    color: #007bff !important; 
+    background-color: rgba(0, 123, 255, 0.05); 
+}
+
+.custom-nav-link:hover img {
+    filter: none; 
+}

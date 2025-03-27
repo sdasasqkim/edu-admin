@@ -1,0 +1,30 @@
+.dashboard-scroll-container {
+    max-height: calc(100vh - 100px); 
+    overflow-y: auto;
+    padding-right: 10px;
+}
+  
+.chart-box {
+  padding: 20px;
+  background-color: white;
+  justify-content: center;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+  
+.chart-label {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.placeholder-box {
+  height: 200px;
+  background-color: #6D2E2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}

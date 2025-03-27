@@ -1,0 +1,33 @@
+h4 {
+    margin-bottom: 15px;
+}
+
+button {
+    white-space: nowrap;
+}
+
+.notices-container {
+    background-color: rgb(255, 255, 255);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.notice-text {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.notice-meta {
+    font-size: 12px;
+    color: rgb(74, 74, 74);
+}

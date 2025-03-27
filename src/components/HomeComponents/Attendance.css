@@ -1,0 +1,111 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; 
+}
+
+/* 출석 체크 컨테이너 */
+.attendance-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; 
+    overflow: hidden;
+}
+
+/* 테이블을 감싸는 컨테이너 */
+.attendance-table-container {
+    flex-grow: 1; 
+    overflow-y: auto !important; 
+    border: 1px solid #ccc; 
+    position: relative;
+    max-height: calc(100vh - 180px); 
+}
+
+/* 테이블 */
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 테이블 헤더 고정 */
+.attendance-table thead {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 100;
+}
+
+/* 테이블 셀 스타일 */
+.attendance-table th,
+.attendance-table td {
+    position: sticky;
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+/* 과목 표시 스타일 */
+.subject-cell {
+    transition: none !important;
+}
+
+.subject-cell:hover {
+    transform: none !important;
+}
+
+.english {
+    background-color: #ffadba !important;
+    color: black;
+}
+
+.math {
+    background-color: #a1d8ff !important;
+    color: black;
+}
+
+.no-subject {
+    background-color: #eeeeee !important;
+    color: #757575;
+}
+
+.attendance-btn {
+    width: 70px;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    color: rgba(0, 0, 0, 0.799);
+}
+
+.attendance-btn:hover {
+    transform: scale(1.05);
+    color: black;
+}
+
+.present {
+    background-color: #bbdefb;
+}
+.present.selected,
+.present:hover {
+    background-color: #1976d2 !important;
+}
+
+.late {
+    background-color: #fff9c4;
+}
+.late.selected,
+.late:hover {
+    background-color: #fbc02d !important;
+}
+
+
+.absent {
+    background-color: #ffcdd2;
+}
+.absent.selected,
+.absent:hover {
+    background-color: #d32f2f !important;
+}
