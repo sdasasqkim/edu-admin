@@ -22,13 +22,15 @@ A smart web-based student management system for academies, built with React and 
 
 ### 1. Clone the repository
 
-```bash
 git clone https://github.com/your-username/edu-admin.git
 cd edu-admin
-2. Install dependencies
+
+
+### 2. Install dependencies
 bash
 npm install
-3. Set up Firebase config
+
+### 3. Set up Firebase config
 프로젝트 루트에 .env 파일을 생성하고 다음과 같이 Firebase 설정을 추가하세요:
 
 ini\
@@ -40,32 +42,22 @@ REACT_APP_MESSAGING_SENDER_ID=your_sender_id
 REACT_APP_APP_ID=your_app_id
 ⚠️ .env는 .gitignore에 이미 포함되어 있어 Git에 업로드되지 않습니다.
 
-4. Run the app
+### 4. Run the app
 bash\
 npm start
-앱이 http://localhost:3000에서 실행됩니다.
+앱이 localhost에서 실행됩니다.
 
-📦 Build for Production
+## 📦 Build for Production
 bash
 npm run build
 build/ 폴더에 최적화된 배포용 앱이 생성됩니다.
 
-📚 Documentation
+## 📚 Documentation
 React Docs
-
 Firebase Docs
-
 React Router
-
 Bootstrap
-
 Recharts
 
-👨‍💻 Author
+## 👨‍💻 Author
 GitHub: @sdasasqkim
-
-
-```bash
-git add README.md
-git commit -m "Fix README formatting"
-git push
