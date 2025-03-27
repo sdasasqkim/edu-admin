@@ -1,70 +1,59 @@
-# Getting Started with Create React App
+# edu-admin
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A smart web-based student management system for academies, built with React and Firebase.
 
-## Available Scripts
+## 🔧 Technologies Used
 
-In the project directory, you can run:
+- **React** (Create React App)
+- **Firebase** (Firestore, Authentication)
+- **Bootstrap** (UI components)
+- **Chart.js / Recharts** (Visualization)
 
-### `npm start`
+## 📋 Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 📅 Individual timetable management per student  
+- 🧑‍🏫 Subject-teacher assignment by student  
+- 🟢 Real-time attendance status (Present / Late / Absent)  
+- 🔔 Announcement dashboard for admins  
+- 📈 Student counts visualized by subject/time  
+- 🔐 Role-based admin features  
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Getting Started
 
-### `npm test`
+1. Clone the repository
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/your-username/edu-admin.git
+cd edu-admin
 
-### `npm run build`
+2. Install dependencies
+npm install
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Set up Firebase config
+프로젝트 루트에 .env 파일을 생성하고 다음과 같이 Firebase 설정을 추가하세요:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+REACT_APP_API_KEY=your_api_key
+REACT_APP_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_PROJECT_ID=your_project_id
+REACT_APP_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_APP_ID=your_app_id
+⚠️ .env는 .gitignore에 이미 포함되어 있어 Git에 업로드되지 않습니다.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Run the app
+npm start
+앱이 localhost에서 실행됩니다.
 
-### `npm run eject`
+📦 Build for Production
+npm run build
+build/ 폴더에 최적화된 배포용 앱이 생성됩니다.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+📚 Documentation
+React Docs
+Firebase Docs
+React Router
+Bootstrap
+Recharts
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+👨‍💻 Author
+GitHub: @sdasasqkim
