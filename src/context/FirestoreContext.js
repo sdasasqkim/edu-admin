@@ -2,8 +2,6 @@ import React, { createContext, useEffect, useState } from "react";
 import { db } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-// Context 생성
 export const FirestoreContext = createContext();
 
 export const FirestoreProvider = ({ children }) => {
@@ -18,9 +16,10 @@ export const FirestoreProvider = ({ children }) => {
 
       if (!querySnapshot.empty) {
         const studentData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+          firestoreId: doc.id,        // 🔥 Firestore 문서 ID 저장
+          ...doc.data(),              // 여기에 실제 학생 id: 99 등이 들어감
         }));
+        
         setStudents(studentData);
         console.log("✅ Firestore에서 학생 데이터 불러오기 완료:", studentData);
       } else {

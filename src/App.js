@@ -28,7 +28,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",
+    eng_T: "T1",attendance:"",
     math_T: null
   },
   {
@@ -51,7 +51,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   },
   {
@@ -74,7 +74,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: "T3"
   },
   {
@@ -97,7 +97,7 @@ const students = [
       { day: "목_수학", start: 16, end: 17 },
       { day: "금_수학", start: 14, end: 16 }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   },
   {
@@ -120,7 +120,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",
+    eng_T: "T1",attendance:"",
     math_T: null
   },
   {
@@ -143,7 +143,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: "T3"
   },
   {
@@ -166,7 +166,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T4"
   },
   {
@@ -189,7 +189,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: null
   },
   {
@@ -212,7 +212,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: "T3"
   },
   {
@@ -235,7 +235,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   },
   {
@@ -258,7 +258,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: null
   },
   {
@@ -281,7 +281,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T1",
+    eng_T: "T1",attendance:"",
     math_T: "T3"
   },
   {
@@ -304,7 +304,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   },
   {
@@ -327,7 +327,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",
+    eng_T: "T2",attendance:"",
     math_T: null
   },
   {
@@ -350,7 +350,7 @@ const students = [
       { day: "목_수학", start: 15, end: 17 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",
+    eng_T: "T1",attendance:"",
     math_T: "T4"
   },
   {
@@ -373,7 +373,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   },
   {
@@ -396,7 +396,7 @@ const students = [
       { day: "목_수학", start: 16, end: 17 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,
+    eng_T: null,attendance:"",
     math_T: "T3"
   }
 ];
