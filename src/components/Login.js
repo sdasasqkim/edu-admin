@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col, Form, Button, Card, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { db } from "../firebaseConfig"; 
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // 비밀번호 표시/숨김 아이콘
+import { db } from "../firebaseConfig";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
-  const [id, setId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showSignup, setShowSignup] = useState(false); // 회원가입 화면 표시 여부
+  const [showSignup, setShowSignup] = useState(false);
   const [signupData, setSignupData] = useState({
     email: "",
     english: false,
@@ -18,7 +19,7 @@ function Login() {
     password: "",
     phone_num: "",
   });
-  const [showPassword, setShowPassword] = useState(false); // 비밀번호 가시성 토글
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
   const navigate = useNavigate();
@@ -28,32 +29,40 @@ function Login() {
     setLoading(true);
 
     try {
-      const adminCollection = collection(db, "admin");
-      const q = query(adminCollection, where("id", "==", id));
-      const querySnapshot = await getDocs(q);
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
 
-      if (!querySnapshot.empty) {
-        const userData = querySnapshot.docs[0].data();
-
-        if (userData.password !== password) {
-          alert("❌ 비밀번호가 일치하지 않습니다.");
-          return;
-        }
-
-        if (userData.chk_for_admin !== true) {
-          alert("⚠️ 해당 계정은 관리자 권한이 없습니다.");
-          return;
-        }
-
-        localStorage.setItem("username", id);
-        alert("✅ 로그인 성공! 메인 페이지로 이동합니다.");
-        navigate("/Home");
-      } else {
-        alert("❌ 해당 ID가 존재하지 않습니다.");
+      const docRef = doc(db, "admin", uid);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        alert("❌ 사용자 정보가 존재하지 않습니다.");
+        return;
       }
+
+      const userData = docSnap.data();
+      if (!userData.allow_login) {
+        alert("🚫 현재 이 계정은 로그인 권한이 없습니다. 관리자에게 문의하세요.");
+        return;
+      }
+
+      // 최근 로그인 시간 업데이트
+      await updateDoc(docRef, { last_login: new Date() });
+
+      localStorage.setItem("username", userData.id);
+      localStorage.setItem("isAdmin", userData.chk_for_admin ? "true" : "false");
+      localStorage.setItem("uid", uid);
+
+      if (userData.chk_for_admin) {
+        alert("✅ 관리자님, 환영합니다!");
+      } else {
+        alert("✅ 관리자 권한 없이 로그인합니다.");
+      }
+
+      navigate("/Home");
     } catch (error) {
-      console.error("❌ 로그인 중 오류 발생:", error);
-      alert("⚠️ 로그인 중 오류가 발생했습니다.");
+      console.error("❌ 로그인 오류:", error);
+      alert("❌ 로그인에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -72,6 +81,10 @@ function Login() {
     setLoading(true);
 
     try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth, signupData.email, signupData.password);
+      const uid = userCredential.user.uid;
+
       const newUser = {
         email: signupData.email,
         english: signupData.english,
@@ -79,18 +92,21 @@ function Login() {
         id: signupData.id,
         password: signupData.password,
         phone_num: signupData.phone_num,
-        chk_for_admin: false, // 기본 권한 fale
+        chk_for_admin: false,
+        allow_login: false,
+        last_login: null,
       };
 
-      await addDoc(collection(db, "admin"), newUser);
-      setSignupSuccess(true); // 회원가입 완료 메시지 표시
+      await setDoc(doc(db, "admin", uid), newUser);
+
+      setSignupSuccess(true);
       setTimeout(() => {
         setSignupSuccess(false);
-        setShowSignup(false); // 회원가입 화면 닫기
+        setShowSignup(false);
       }, 1000);
     } catch (error) {
-      console.error("❌ 회원가입 중 오류 발생:", error);
-      alert("⚠️ 회원가입 중 오류가 발생했습니다.");
+      console.error("❌ 회원가입 오류:", error);
+      alert("❌ 회원가입에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -98,21 +114,35 @@ function Login() {
 
   return (
     <Container className="d-flex justify-content-center align-items-center vh-100">
-      <Row className="justify-content-center transition-container" style={{ width: showSignup ? "800px" : "400px", transition: "width 0.3s ease-in-out" }}>
-        {/* 로그인 컨테이너 */}
+      <Row
+        className="justify-content-center transition-container"
+        style={{ width: showSignup ? "800px" : "400px", transition: "width 0.3s ease-in-out" }}
+      >
         <Col md={showSignup ? 6 : 12} className="transition-item">
           <Card className="p-4 shadow-lg">
             <Card.Body>
               <h3 className="text-center mb-4">Login</h3>
               <Form onSubmit={handleLogin}>
-                <Form.Group controlId="id">
-                  <Form.Label>ID</Form.Label>
-                  <Form.Control type="text" placeholder="ID 입력" value={id} onChange={(e) => setId(e.target.value)} required />
+                <Form.Group controlId="email">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    placeholder="이메일 입력"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </Form.Group>
 
                 <Form.Group controlId="password" className="mt-3">
                   <Form.Label>비밀번호</Form.Label>
-                  <Form.Control type="password" placeholder="비밀번호 입력" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <Form.Control
+                    type="password"
+                    placeholder="비밀번호 입력"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </Form.Group>
 
                 <Button variant="success" type="submit" className="w-100 mt-3" disabled={loading}>
@@ -126,7 +156,6 @@ function Login() {
           </Card>
         </Col>
 
-        {/* 회원가입 컨테이너 */}
         {showSignup && (
           <Col md={6} className="transition-item">
             <Card className="p-4 shadow-lg">
@@ -135,7 +164,14 @@ function Login() {
                 <Form onSubmit={handleSignup}>
                   <Form.Group controlId="email">
                     <Form.Label>Email</Form.Label>
-                    <Form.Control type="email" placeholder="이메일 입력" name="email" value={signupData.email} onChange={handleSignupChange} required />
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      placeholder="이메일 입력"
+                      value={signupData.email}
+                      onChange={handleSignupChange}
+                      required
+                    />
                   </Form.Group>
 
                   <Form.Group className="mt-3">
@@ -146,13 +182,27 @@ function Login() {
 
                   <Form.Group className="mt-3">
                     <Form.Label>ID</Form.Label>
-                    <Form.Control type="text" name="id" placeholder="ID 입력" value={signupData.id} onChange={handleSignupChange} required />
+                    <Form.Control
+                      type="text"
+                      name="id"
+                      placeholder="ID 입력"
+                      value={signupData.id}
+                      onChange={handleSignupChange}
+                      required
+                    />
                   </Form.Group>
 
                   <Form.Group className="mt-3">
                     <Form.Label>비밀번호</Form.Label>
                     <InputGroup>
-                      <Form.Control type={showPassword ? "text" : "password"} name="password" placeholder="비밀번호 입력" value={signupData.password} onChange={handleSignupChange} required />
+                      <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="비밀번호 입력"
+                        value={signupData.password}
+                        onChange={handleSignupChange}
+                        required
+                      />
                       <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
                       </Button>
@@ -161,16 +211,15 @@ function Login() {
 
                   <Form.Group className="mt-3">
                     <Form.Label>전화번호</Form.Label>
-                    <Form.Control 
-                      type="text" 
-                      name="phone_num" 
-                      placeholder="000-0000-0000" 
-                      value={signupData.phone_num} 
-                      onChange={handleSignupChange} 
-                      required 
+                    <Form.Control
+                      type="text"
+                      name="phone_num"
+                      placeholder="000-0000-0000"
+                      value={signupData.phone_num}
+                      onChange={handleSignupChange}
+                      required
                     />
                   </Form.Group>
-
 
                   <Button variant="primary" type="submit" className="w-100 mt-3">
                     회원가입
@@ -182,7 +231,6 @@ function Login() {
         )}
       </Row>
     </Container>
-
   );
 }
 

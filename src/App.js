@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Home from "./components/Home";  
 import { FirestoreProvider } from "./context/FirestoreContext"; // FirestoreProvider
 import { db } from "./firebaseConfig"; // Firebase setting
 import { collection, getDocs, addDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const students = [
   {
@@ -435,16 +436,29 @@ const uploadStudentsToFirestore = async () => {
 
 
 function App() {
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    uploadStudentsToFirestore(); // 앱 실행 시 Firestore에 학생 데이터 업로드
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        uploadStudentsToFirestore(); // 로그인된 경우에만 업로드 시도
+      }
+      setIsReady(true);
+    });
+  
+    return () => unsubscribe();
   }, []);
+  
+
+  if (!isReady) return <div>로딩 중...</div>;
 
   return (
-    <FirestoreProvider>  {/* FirestoreProvider*/}
+    <FirestoreProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} />  {/* 로그인 페이지 */}
-          <Route path="/Home" element={<Home />} />  {/* 로그인 후 메인 페이지 */}
+          <Route path="/" element={<Login />} />
+          <Route path="/Home" element={<Home />} />
         </Routes>
       </Router>
     </FirestoreProvider>

@@ -10,56 +10,56 @@ import {
   serverTimestamp,
   query,
   orderBy,
+  getDoc,
 } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./Notices.css";
 
 function Notices() {
   const [notices, setNotices] = useState([]);
   const [newNotice, setNewNotice] = useState("");
-  const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState(""); // 로그인한 사용자의 id
+  const [uid, setUid] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    setUsername(storedUsername || "");
+    const auth = getAuth();
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const currentUid = user.uid;
+        setUid(currentUid);
 
-    // 🔹 관리자 여부 확인 (admin 컬렉션에서 chk_for_admin 확인)
-    const checkAdminStatus = async () => {
-      if (!storedUsername) return;
-      const adminRef = collection(db, "admin");
-      const q = query(adminRef);
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const match = snapshot.docs.find((doc) => doc.data().id === storedUsername);
-        setIsAdmin(match?.data()?.chk_for_admin === true);
-      });
-      return () => unsubscribe();
-    };
+        const adminDoc = await getDoc(doc(db, "admin", currentUid));
+        if (adminDoc.exists()) {
+          const data = adminDoc.data();
+          setUserId(data.id || ""); 
+          setIsAdmin(data.chk_for_admin === true);
+        }
+      }
+    });
 
-    checkAdminStatus();
-
-    // 🔹 실시간 공지 목록 가져오기
-    const noticesRef = collection(db, "notices");
-    const q = query(noticesRef, orderBy("timestamp", "desc"));
+    const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
     const unsubscribeNotices = onSnapshot(q, (snapshot) => {
-      const updatedNotices = snapshot.docs.map((doc) => ({
+      const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setNotices(updatedNotices);
+      setNotices(data);
     });
 
     return () => {
+      unsubscribeAuth();
       unsubscribeNotices();
     };
   }, []);
 
   const handleAddNotice = async () => {
     if (!newNotice.trim()) return;
-
     try {
       await addDoc(collection(db, "notices"), {
         text: newNotice.trim(),
-        author: username,
+        author: userId,
+        uid: uid,
         timestamp: serverTimestamp(),
       });
       setNewNotice("");
@@ -69,15 +69,15 @@ function Notices() {
     }
   };
 
-  const handleDeleteNotice = async (id, author) => {
-    if (!isAdmin && username !== author) {
+  const handleDeleteNotice = async (notice) => {
+    if (!isAdmin && notice.author !== userId) {
       alert("본인이 작성한 공지만 삭제할 수 있습니다.");
       return;
     }
 
     if (window.confirm("정말 삭제하시겠습니까?")) {
       try {
-        await deleteDoc(doc(db, "notices", id));
+        await deleteDoc(doc(db, "notices", notice.id));
       } catch (error) {
         console.error("❌ 삭제 오류:", error);
         alert("⚠️ 공지를 삭제하는 데 실패했습니다.");
@@ -130,11 +130,11 @@ function Notices() {
                   })}
                 </small>
               </div>
-              {(isAdmin || notice.author === username) && (
+              {(isAdmin || notice.author === userId) && (
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => handleDeleteNotice(notice.id, notice.author)}
+                  onClick={() => handleDeleteNotice(notice)}
                 >
                   삭제
                 </Button>
