@@ -34,8 +34,14 @@ function Home() {
     <Container fluid className="home-container p-0">
       <Row className="g-0 align-items-stretch top-row">
         <Col md={2} className="d-flex align-items-center justify-content-center brand-box p-0">
-          <h4>학원이름</h4>
+          <div className="logo-wrapper">
+            <h4 className="logo-text">
+              <span className="edu-text">Edu</span>
+              <span className="manage-text">Manage</span>
+            </h4>
+          </div>
         </Col>
+
 
         <Col className="d-flex align-items-center justify-content-between px-4 custom-navbar flex-grow-1 p-0">
           <Nav>

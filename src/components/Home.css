@@ -10,12 +10,36 @@ html, body {
 }
 
 
-/* 1(학원이름)과 2(네비게이션 바) 높이 고정 */
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+.logo-text {
+margin: 0;
+font-size: 22px;
+font-family: Verdana, sans-serif;
+font-weight: 600;
+display: flex;
+gap: 2px;
+}
+
+.edu-text {
+color: #006266;
+}
+
+.manage-text {
+color: #1e3799;
+}
+  
+
+/* 1(edumanage)과 2(네비게이션 바) 높이 고정 */
 .top-row {
     height: 70px; /* 원하는 높이로 조정 가능 */
 }
 
-/* 1 (학원이름) */
+/* 1 (EduManage) */
 .brand-box {
     background-color: #FFFFFF;
     font-weight: bold;
