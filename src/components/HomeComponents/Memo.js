@@ -1,103 +1,160 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db } from "../../firebaseConfig";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  onSnapshot,
+  doc,
+  query,
+  where,
+  orderBy,
+  getDoc
+} from "firebase/firestore";
 import "./Memo.css";
 
 const colors = [
-    "var(--memo-red)",
-    "var(--memo-orange)",
-    "var(--memo-yellow)",
-    "var(--memo-green)",
-    "var(--memo-blue)",
-    "var(--memo-indigo)",
-    "var(--memo-purple)"
+  "var(--memo-red)",
+  "var(--memo-orange)",
+  "var(--memo-yellow)",
+  "var(--memo-green)",
+  "var(--memo-blue)",
+  "var(--memo-indigo)",
+  "var(--memo-purple)",
 ];
 
 function Memo() {
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [memos, setMemos] = useState([]);
-    const [editingIndex, setEditingIndex] = useState(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [memos, setMemos] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState("");
 
-    const handleSave = () => {
-        if (!title.trim()) return; // 제목 X -> 저장 X
+  useEffect(() => {
+    const fetchUserIdAndMemos = async () => {
+      const storedUid = localStorage.getItem("uid");
+      if (!storedUid) return;
 
-        if (editingIndex !== null) {
-            //수정 모드일 경우 기존 색상 유지
-            setMemos(prevMemos =>
-                prevMemos.map((memo, index) =>
-                    index === editingIndex
-                        ? { ...memo, title, content }
-                        : memo
-                )
-            );
-            setEditingIndex(null); // 수정 모드 해제
-        } else {
-            // 새 메모 추가 (6가지 색상 순환)
-            const colorIndex = memos.length % colors.length;
-            setMemos([...memos, { title, content, color: colors[colorIndex] }]);
-        }
+      const adminSnap = await getDoc(doc(db, "admin", storedUid));
+      if (!adminSnap.exists()) return;
 
-        setTitle(""); // 입력값 초기화
-        setContent("");
+      const adminData = adminSnap.data();
+      const idField = adminData.id;
+      setUserId(idField);
+      setUsername(idField);
+
+      const q = query(
+        collection(db, "memo"),
+        where("author", "==", idField),
+        orderBy("createdAt")
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          docId: doc.id,
+          ...doc.data(),
+        }));
+        setMemos(data);
+      });
+
+      return () => unsubscribe();
     };
 
-    const handleEdit = (index) => {
-        const memo = memos[index];
-        setTitle(memo.title);
-        setContent(memo.content);
-        setEditingIndex(index);
-    };
+    fetchUserIdAndMemos();
+  }, []);
 
-    const handleDelete = (index) => {
-        if (window.confirm("정말 삭제하시겠습니까?")) {
-            setMemos(prevMemos => prevMemos.filter((_, i) => i !== index));
-        }
-    };
+  const handleSave = async () => {
+    if (!title.trim()) return;
 
-    return (
-        <div>
-            <h3>📝 메모</h3>
+    if (editingId !== null) {
+      const ref = doc(db, "memo", editingId);
+      await updateDoc(ref, { title, content });
+      setEditingId(null);
+    } else {
+      await addDoc(collection(db, "memo"), {
+        title,
+        content,
+        author: userId,
+        createdAt: new Date(),
+      });
+    }
 
-            {/* 제목 + 내용 */}
-            <div className="memo-container">
-                <input
-                    type="text"
-                    className="memo-title"
-                    placeholder="제목을 입력하세요"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-                <textarea
-                    className="memo-textarea"
-                    placeholder="메모를 입력하세요"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                />
+    setTitle("");
+    setContent("");
+  };
+
+  const handleEdit = (docId) => {
+    const memo = memos.find((m) => m.docId === docId);
+    if (memo) {
+      setTitle(memo.title);
+      setContent(memo.content);
+      setEditingId(docId);
+    }
+  };
+
+  const handleDelete = async (docId) => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      await deleteDoc(doc(db, "memo", docId));
+    }
+  };
+
+  return (
+    <div>
+      <h3>📝 메모</h3>
+
+      <div className="memo-container">
+        <input
+          type="text"
+          className="memo-title"
+          placeholder="제목을 입력하세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          className="memo-textarea"
+          placeholder="메모를 입력하세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+        />
+      </div>
+
+      <div className="memo-buttons">
+        <button className="memo-save-btn" onClick={handleSave}>
+          {editingId !== null ? "수정 완료" : "저장"}
+        </button>
+        <button
+          className="memo-reset-btn"
+          onClick={() => {
+            setTitle("");
+            setContent("");
+            setEditingId(null);
+          }}
+        >
+          초기화
+        </button>
+      </div>
+
+      <div className="memo-list">
+        {memos.map((memo, index) => (
+          <div
+            key={memo.docId}
+            className="memo-item"
+            style={{ backgroundColor: colors[index % colors.length] }}
+          >
+            <span className="memo-text">
+              ({index + 1}) <b>{memo.title}</b>
+            </span>
+            <div className="memo-actions">
+              <button className="edit-btn" onClick={() => handleEdit(memo.docId)}>수정</button>
+              <button className="delete-btn" onClick={() => handleDelete(memo.docId)}>삭제</button>
             </div>
-
-            {/* 버튼 */}
-            <div className="memo-buttons">
-                <button className="memo-save-btn" onClick={handleSave}>
-                    {editingIndex !== null ? "수정 완료" : "저장"}
-                </button>
-                <button className="memo-reset-btn" onClick={() => { setTitle(""); setContent(""); setEditingIndex(null); }}>
-                    초기화
-                </button>
-            </div>
-
-            {/* 메모 목록 */}
-            <div className="memo-list">
-                {memos.map((memo, index) => (
-                    <div key={index} className="memo-item" style={{ backgroundColor: memo.color }}>
-                        <span className="memo-text">({index + 1}) <b>{memo.title}</b></span>
-                        <div className="memo-actions">
-                            <button className="edit-btn" onClick={() => handleEdit(index)}>수정</button>
-                            <button className="delete-btn" onClick={() => handleDelete(index)}>삭제</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default Memo;
