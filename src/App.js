@@ -414,24 +414,24 @@ const uploadStudentsToFirestore = async () => {
       docsMap[data.id] = docSnap.id; // 실제 Firestore 문서 ID를 저장
     });
 
-    for (const student of students) {
-      const firestoreId = docsMap[student.id];
-      if (firestoreId) {
-        // 🔥 기존 문서 업데이트: 필드만 추가 또는 수정
-        await updateDoc(doc(db, "students-info", firestoreId), {
-          in: student.in || null,
-          out: student.out || null,
-          in_math: student.in_math || null,
-          out_math: student.out_math || null,
-        });
+    // for (const student of students) {
+    //   const firestoreId = docsMap[student.id];
+    //   if (firestoreId) {
+    //     // 🔥 기존 문서 업데이트: 필드만 추가 또는 수정
+    //     await updateDoc(doc(db, "students-info", firestoreId), {
+    //       in: student.in || null,
+    //       out: student.out || null,
+    //       in_math: student.in_math || null,
+    //       out_math: student.out_math || null,
+    //     });
         
-        console.log(`🛠️ ${student.name} 필드 업데이트 완료`);
-      } else {
-        // 존재하지 않는 경우 새로 추가
-        await addDoc(studentsCollection, student);
-        console.log(`✅ ${student.name} 새로 추가 완료`);
-      }
-    }
+    //     console.log(`🛠️ ${student.name} 필드 업데이트 완료`);
+    //   } else {
+    //     // 존재하지 않는 경우 새로 추가
+    //     await addDoc(studentsCollection, student);
+    //     console.log(`✅ ${student.name} 새로 추가 완료`);
+    //   }
+    // }
 
     console.log("🎉 모든 데이터 처리 완료");
   } catch (error) {
