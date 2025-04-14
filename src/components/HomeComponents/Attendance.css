@@ -50,6 +50,7 @@ html, body {
 /* 과목 표시 스타일 */
 .subject-cell {
     transition: none !important;
+    font-size: 20px;
 }
 
 .subject-cell:hover {
