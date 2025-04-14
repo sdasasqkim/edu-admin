@@ -10,103 +10,7 @@ function Students() {
   const [showForm, setShowForm] = useState(false);
   const [newlyAddedId, setNewlyAddedId] = useState(null);
   const [expandedStudentId, setExpandedStudentId] = useState(null);
-  const [student, setStudent] = useState({ /* 선택된 학생 정보 */ });
-
-
-  const [newStudent, setNewStudent] = useState({
-    school: "",
-    grade: "",
-    name: "",
-    phone: "",
-    english: false,
-    math: false,
-    schedule: [],
-    eng_T: null,
-    math_T: null,
-  });
-
-  const days = ["월", "화", "수", "목", "금"];
-  const fullScheduleTemplate = [
-    "월", "화", "수", "목", "금",
-    "월_수학", "화_수학", "수_수학", "목_수학", "금_수학",
-  ].map((day) => ({ day, start: null, end: null }));
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewStudent((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleScheduleChange = (dayKey, field, value) => {
-    setNewStudent((prev) => {
-      const updated = [...prev.schedule];
-      const idx = updated.findIndex((s) => s.day === dayKey);
-      if (idx >= 0) {
-        updated[idx] = { ...updated[idx], [field]: value };
-      } else {
-        updated.push({ day: dayKey, start: null, end: null, [field]: value });
-      }
-      return { ...prev, schedule: updated };
-    });
-  };
-
-  const renderScheduleInputs = (subject) => {
-    const keys = days.map((day) => (subject === "english" ? day : `${day}_수학`));
-    return (
-      <div className="schedule-grid">
-        <div className="row-label" />
-        {days.map((day) => <div className="col-label" key={day}>{day}</div>)}
-        <div className="row-label">시작 시간</div>
-        {keys.map((key) => {
-          const current = newStudent.schedule.find((s) => s.day === key) || {};
-          return (
-            <input key={`${key}-start`} type="number" min="0" max="23" placeholder="00" value={current.start ?? ""} onChange={(e) => handleScheduleChange(key, "start", e.target.value)} />
-          );
-        })}
-        <div className="row-label">종료 시간</div>
-        {keys.map((key) => {
-          const current = newStudent.schedule.find((s) => s.day === key) || {};
-          return (
-            <input key={`${key}-end`} type="number" min="0" max="23" placeholder="00" value={current.end ?? ""} onChange={(e) => handleScheduleChange(key, "end", e.target.value)} />
-          );
-        })}
-      </div>
-    );
-  };
-
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    const finalSchedule = fullScheduleTemplate.map((template) => {
-      const match = newStudent.schedule.find((s) => s.day === template.day);
-      return match ? { ...template, ...match } : template;
-    });
-    const studentToSave = { ...newStudent, schedule: finalSchedule };
-
-    try {
-      const docRef = await addDoc(collection(db, "students-info"), studentToSave);
-      setNewlyAddedId(docRef.id);
-      await fetchStudents();
-      setTimeout(() => setNewlyAddedId(null), 5000);
-      alert("✅ 학생이 등록되었습니다!");
-      setShowForm(false);
-      setNewStudent({
-        school: "",
-        grade: "",
-        name: "",
-        phone: "",
-        english: false,
-        math: false,
-        schedule: [],
-        eng_T: null,
-        math_T: null,
-      });
-    } catch (error) {
-      console.error("❌ 학생 등록 오류:", error);
-      alert("⚠️ 학생 등록 중 오류가 발생했습니다.");
-    }
-  };
+  const [studentDraft, setStudentDraft] = useState(null);
 
   const handleDeleteStudent = async (id) => {
     if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -121,41 +25,45 @@ function Students() {
     }
   };
 
-  const handleFieldChange = async (id, field, value) => {
+  const handleSaveStudent = async (student) => {
     try {
-      const docRef = doc(db, "students-info", id);
-      await updateDoc(docRef, { [field]: value });
+      const docRef = doc(db, "students-info", student.firestoreId);
+      await updateDoc(docRef, {
+        english: student.english,
+        math: student.math,
+        eng_T: student.eng_T,
+        math_T: student.math_T,
+        in: student.in || null,
+        out: student.out || null,
+        in_math: student.in_math || null,
+        out_math: student.out_math || null,
+        schedule: student.schedule,
+      });
+      alert("✅ 저장이 완료되었습니다!");
       await fetchStudents();
+      setExpandedStudentId(null);
+      setStudentDraft(null);
     } catch (err) {
-      console.error("업데이트 실패:", err);
-    }
-  };
-
-  const handleScheduleUpdate = async (id, newSchedule) => {
-    try {
-      const docRef = doc(db, "students-info", id);
-      await updateDoc(docRef, { schedule: newSchedule });
-      await fetchStudents();
-    } catch (err) {
-      console.error("시간표 업데이트 실패:", err);
+      console.error("❌ 저장 실패:", err);
+      alert("⚠️ 저장 중 오류가 발생했습니다.");
     }
   };
 
   return (
     <div>
       <div className="students-header">
-        <h3>👨‍🎓 학생 목록</h3>
-        <Button variant="primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? "학생 등록 닫기" : "학생 등록"}
-        </Button>
+        <h3 style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          👨‍🎓 학생 목록
+          <span style={{ fontSize: "16px", color: "#888", fontWeight: "normal" }}>
+            ※ 이름 클릭하여 정보 수정 가능
+          </span>
+        </h3>
       </div>
-  
-      {showForm && (
-        <div className="student-form-container">
-          <h3>➕ 학생 등록</h3>
-        </div>
-      )}
-  
+
+
+
+
+
       {loading ? (
         <p>⏳ 데이터를 불러오는 중...</p>
       ) : (
@@ -173,19 +81,20 @@ function Students() {
             </thead>
             <tbody>
               {students.map((student) => (
-                <React.Fragment key={student.id}>
+                <React.Fragment key={student.firestoreId}>
                   <tr>
                     <td
-                      style={{ cursor: "pointer" }}
-                      onClick={() => setExpandedStudentId(
-                        expandedStudentId === student.id ? null : student.id
-                      )}
+                      style={{ cursor: "pointer", backgroundColor:"#f1f1f1" }}
+                      onClick={() => {
+                        if (expandedStudentId === student.firestoreId) {
+                          setExpandedStudentId(null);
+                          setStudentDraft(null);
+                        } else {
+                          setExpandedStudentId(student.firestoreId);
+                          setStudentDraft({ ...student });
+                        }
+                      }}
                     >
-                      {student.id === newlyAddedId && (
-                        <span style={{ color: "red", marginRight: "6px" }}>
-                          new!
-                        </span>
-                      )}
                       {student.name}
                     </td>
                     <td>{student.school}</td>
@@ -194,26 +103,40 @@ function Students() {
                     <td>{student.math ? "✅" + student.math_T : "❌ 미수강"}</td>
                     <td>{student.phone}</td>
                   </tr>
-                  {expandedStudentId === student.id && (
+                  {expandedStudentId === student.firestoreId && studentDraft && (
                     <tr>
                       <td colSpan="6">
                         <div className="expanded-student">
-                          <div className="student-detail-wrapper">
-                            <div className="subject-settings">
+                          <div
+                            className="student-detail-wrapper"
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: "40px",
+                              alignItems: "flex-start",
+                            }}
+                          >
+                            <div className="subject-settings" style={{ flex: 1 }}>
                               <Form.Check
                                 type="checkbox"
                                 label="영어 수강 여부"
-                                checked={student.english}
+                                checked={studentDraft.english}
                                 onChange={(e) =>
-                                  handleFieldChange(student.id, "english", e.target.checked)
+                                  setStudentDraft((prev) => ({
+                                    ...prev,
+                                    english: e.target.checked,
+                                  }))
                                 }
                               />
                               <Form.Group className="teacher-select">
                                 <Form.Label>영어 선생님</Form.Label>
                                 <Form.Select
-                                  value={student.eng_T || ""}
+                                  value={studentDraft.eng_T || ""}
                                   onChange={(e) =>
-                                    handleFieldChange(student.id, "eng_T", e.target.value)
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      eng_T: e.target.value,
+                                    }))
                                   }
                                 >
                                   <option value="">없음</option>
@@ -223,21 +146,26 @@ function Students() {
                                   <option value="T4">T4</option>
                                 </Form.Select>
                               </Form.Group>
-  
                               <Form.Check
                                 type="checkbox"
                                 label="수학 수강 여부"
-                                checked={student.math}
+                                checked={studentDraft.math}
                                 onChange={(e) =>
-                                  handleFieldChange(student.id, "math", e.target.checked)
+                                  setStudentDraft((prev) => ({
+                                    ...prev,
+                                    math: e.target.checked,
+                                  }))
                                 }
                               />
                               <Form.Group className="teacher-select">
                                 <Form.Label>수학 선생님</Form.Label>
                                 <Form.Select
-                                  value={student.math_T || ""}
+                                  value={studentDraft.math_T || ""}
                                   onChange={(e) =>
-                                    handleFieldChange(student.id, "math_T", e.target.value)
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      math_T: e.target.value,
+                                    }))
                                   }
                                 >
                                   <option value="">없음</option>
@@ -248,21 +176,83 @@ function Students() {
                                 </Form.Select>
                               </Form.Group>
                             </div>
-  
-                            <div className="schedule-editor">
+
+                            <div className="student-dates" style={{ flex: 1, lineHeight: "2.4" }}>
+                              <Form.Group className="mb-2">
+                                <Form.Label>영어 입회일:</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={studentDraft.in || ""}
+                                  onChange={(e) =>
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      in: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </Form.Group>
+                              <Form.Group className="mb-2">
+                                <Form.Label>영어 휴회일:</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={studentDraft.out || ""}
+                                  onChange={(e) =>
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      out: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </Form.Group>
+                              <Form.Group className="mb-2">
+                                <Form.Label>수학 입회일:</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={studentDraft.in_math || ""}
+                                  onChange={(e) =>
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      in_math: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </Form.Group>
+                              <Form.Group>
+                                <Form.Label>수학 휴회일:</Form.Label>
+                                <Form.Control
+                                  type="text"
+                                  value={studentDraft.out_math || ""}
+                                  onChange={(e) =>
+                                    setStudentDraft((prev) => ({
+                                      ...prev,
+                                      out_math: e.target.value,
+                                    }))
+                                  }
+                                />
+                              </Form.Group>
+                            </div>
+
+                            <div className="schedule-editor" style={{ flex: 1 }}>
                               <h5>🕒 수업 시간표</h5>
-                              {student.schedule.map((item, i) => (
-                                <div key={i}>
-                                  <strong>{item.day}</strong>
+                              {studentDraft.schedule.map((item, i) => (
+                                <div key={i} style={{ marginBottom: 6 }}>
+                                  <strong>
+                                    {item.day.includes("수학")
+                                      ? item.day.replace("_수학", "_Math")
+                                      : `${item.day}_Eng`}
+                                  </strong>
                                   <input
                                     type="number"
                                     min="0"
                                     max="23"
                                     value={item.start ?? ""}
                                     onChange={(e) => {
-                                      const updated = [...student.schedule];
+                                      const updated = [...studentDraft.schedule];
                                       updated[i].start = e.target.value;
-                                      handleScheduleUpdate(student.id, updated);
+                                      setStudentDraft((prev) => ({
+                                        ...prev,
+                                        schedule: updated,
+                                      }));
                                     }}
                                     style={{ width: 50, margin: "0 5px" }}
                                   />
@@ -273,9 +263,12 @@ function Students() {
                                     max="23"
                                     value={item.end ?? ""}
                                     onChange={(e) => {
-                                      const updated = [...student.schedule];
+                                      const updated = [...studentDraft.schedule];
                                       updated[i].end = e.target.value;
-                                      handleScheduleUpdate(student.id, updated);
+                                      setStudentDraft((prev) => ({
+                                        ...prev,
+                                        schedule: updated,
+                                      }));
                                     }}
                                     style={{ width: 50, marginLeft: 5 }}
                                   />
@@ -283,14 +276,22 @@ function Students() {
                               ))}
                             </div>
                           </div>
-  
-                          <Button
-                            variant="danger"
-                            className="mt-3"
-                            onClick={() => handleDeleteStudent(student.id)}
-                          >
-                            삭제하기
-                          </Button>
+
+                          <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+                            <Button
+                              variant="success"
+                              onClick={() => handleSaveStudent(studentDraft)}
+                              style={{ marginRight: 10 }}
+                            >
+                              저장하기
+                            </Button>
+                            <Button
+                              variant="danger"
+                              onClick={() => handleDeleteStudent(student.firestoreId)}
+                            >
+                              삭제하기
+                            </Button>
+                          </div>
                         </div>
                       </td>
                     </tr>

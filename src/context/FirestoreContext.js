@@ -16,8 +16,8 @@ export const FirestoreProvider = ({ children }) => {
 
       if (!querySnapshot.empty) {
         const studentData = querySnapshot.docs.map((doc) => ({
-          firestoreId: doc.id,        // 🔥 Firestore 문서 ID 저장
-          ...doc.data(),              // 여기에 실제 학생 id: 99 등이 들어감
+          firestoreId: doc.id,        
+          ...doc.data(),              
         }));
         
         setStudents(studentData);
@@ -46,7 +46,7 @@ export const FirestoreProvider = ({ children }) => {
   }, []);
 
   return (
-    <FirestoreContext.Provider value={{ students, loading }}>
+    <FirestoreContext.Provider value={{ students, loading, fetchStudents }}>
       {children}
     </FirestoreContext.Provider>
   );
