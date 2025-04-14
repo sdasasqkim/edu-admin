@@ -15,9 +15,6 @@ function Attendance() {
   const todayKey = today.toISOString().split("T")[0];
   const daysKor = ["일", "월", "화", "수", "목", "금", "토"];
   const todayDay = daysKor[today.getDay()];
-  const todayCutoff = Number(
-    `${String(today.getFullYear()).slice(2)}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`
-  );
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -78,27 +75,15 @@ function Attendance() {
 
   const filteredStudents = students
     .filter((student) => {
+      if (selectedFilter === "전체") return true;
       const schedule = student.schedule || [];
       const hasClassToday = schedule.some(
         (s) => (s.day === todayDay || s.day === `${todayDay}_수학`) && s.start !== null && s.end !== null
       );
-
-      const isEnglishActive = student.english && student.in && student.in <= todayCutoff && (!student.out || student.out >= todayCutoff);
-      const isMathActive = student.math && student.in_math && student.in_math <= todayCutoff && (!student.out_math || student.out_math >= todayCutoff);
-
-      if (selectedFilter === "전체") {
-        return student.english || student.math;
-      }
-
-      if (selectedFilter === "영어") {
-        return student.english;
-      }
-
-      if (selectedFilter === "수학") {
-        return student.math;
-      }
-
-      return hasClassToday && (isEnglishActive || isMathActive);
+      if (!hasClassToday) return false;
+      if (selectedFilter === "영어" && !student.english) return false;
+      if (selectedFilter === "수학" && !student.math) return false;
+      return true;
     })
     .sort((a, b) => {
       const aVal = getGradeValue(a.school, a.grade);
@@ -106,20 +91,12 @@ function Attendance() {
       return aVal - bVal;
     });
 
-  const renderSubjectCell = (subject, isActive) => {
-    return (
-      <span className={`subject-cell ${subject} ${isActive ? subject : "no-subject"}`} style={{ textDecoration: isActive ? "none" : "none" }}>
-        {subject === "english" ? "영어" : "수학"}
-      </span>
-    );
-  };
-
   return (
     <div className="attendance-container">
       <h3>📅 출석 체크</h3>
       <p className="d-flex align-items-center gap-2">
         학생들의 출석 상태를 확인하고 기록할 수 있습니다.
-        <span style={{ fontSize: "20px", color: "#888" }}>({fetchStatus})</span>
+        <span style={{ fontSize: "15px", color: "#888" }}>({fetchStatus})</span>
       </p>
 
       <div className="mb-3">
@@ -155,45 +132,41 @@ function Attendance() {
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.map((student) => {
-                const isEnglishActive = student.english && student.in && student.in <= todayCutoff && (!student.out || student.out >= todayCutoff);
-                const isMathActive = student.math && student.in_math && student.in_math <= todayCutoff && (!student.out_math || student.out_math >= todayCutoff);
-                return (
-                  <tr key={student.firestoreId}>
-                    <td>{student.school}</td>
-                    <td>{student.grade}</td>
-                    <td>{student.name}</td>
-                    <td>{formattedDate}</td>
-                    <td>{renderSubjectCell("english", isEnglishActive)}</td>
-                    <td>{renderSubjectCell("math", isMathActive)}</td>
-                    <td>
-                      <Button
-                        className={`attendance-btn present ${attendanceStatus[student.firestoreId] === "출석" ? "selected" : ""}`}
-                        onClick={() => updateAttendance(student.firestoreId, "A", "출석")}
-                      >
-                        출석
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        className={`attendance-btn late ${attendanceStatus[student.firestoreId] === "지각" ? "selected" : ""}`}
-                        onClick={() => updateAttendance(student.firestoreId, "B", "지각")}
-                      >
-                        지각
-                      </Button>
-                    </td>
-                    <td>
-                      <Button
-                        className={`attendance-btn absent ${attendanceStatus[student.firestoreId] === "결석" ? "selected" : ""}`}
-                        onClick={() => updateAttendance(student.firestoreId, "C", "결석")}
-                      >
-                        결석
-                      </Button>
-                    </td>
-                    <td>{student.phone}</td>
-                  </tr>
-                );
-              })}
+              {filteredStudents.map((student) => (
+                <tr key={student.firestoreId}>
+                  <td>{student.school}</td>
+                  <td>{student.grade}</td>
+                  <td>{student.name}</td>
+                  <td>{formattedDate}</td>
+                  <td className={`subject-cell ${student.english ? "english" : "no-subject"}`}>영어</td>
+                  <td className={`subject-cell ${student.math ? "math" : "no-subject"}`}>수학</td>
+                  <td>
+                    <Button
+                      className={`attendance-btn present ${attendanceStatus[student.firestoreId] === "출석" ? "selected" : ""}`}
+                      onClick={() => updateAttendance(student.firestoreId, "A", "출석")}
+                    >
+                      출석
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      className={`attendance-btn late ${attendanceStatus[student.firestoreId] === "지각" ? "selected" : ""}`}
+                      onClick={() => updateAttendance(student.firestoreId, "B", "지각")}
+                    >
+                      지각
+                    </Button>
+                  </td>
+                  <td>
+                    <Button
+                      className={`attendance-btn absent ${attendanceStatus[student.firestoreId] === "결석" ? "selected" : ""}`}
+                      onClick={() => updateAttendance(student.firestoreId, "C", "결석")}
+                    >
+                      결석
+                    </Button>
+                  </td>
+                  <td>{student.phone}</td>
+                </tr>
+              ))}
             </tbody>
           </Table>
         </div>
