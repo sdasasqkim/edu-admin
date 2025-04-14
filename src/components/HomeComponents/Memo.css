@@ -5,7 +5,7 @@
     width: 80%;
     max-width: 900px;
     margin: 20px auto 0 auto;
-    border: 2px solid #54779c; 
+    border: 2px solid #929292; 
     border-radius: 5px;
     overflow: hidden; 
     background-color: white; 
@@ -19,7 +19,7 @@
     font-size: 18px;
     font-weight: bold;
     border: none;
-    border-bottom: 2px solid #54779c;
+    border-bottom: 2px solid #929292;
     outline: none;
 }
 
