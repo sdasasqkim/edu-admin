@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FirestoreContext } from "../../context/FirestoreContext";
-import { Table, Button } from "react-bootstrap";
+import { Table, Button, Form } from "react-bootstrap";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import "./Attendance.css";
@@ -8,13 +8,13 @@ import "./Attendance.css";
 function Attendance() {
   const { students, loading } = useContext(FirestoreContext);
   const [attendanceStatus, setAttendanceStatus] = useState({});
-  const [selectedSchool, setSelectedSchool] = useState("");
-  const [selectedGrade, setSelectedGrade] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("수업 있는 학생만");
   const [fetchStatus, setFetchStatus] = useState("출석 상태 불러오는 중...");
 
   const today = new Date();
-  const todayKey = today.toISOString().split("T")[0]; // YYYY-MM-DD
+  const todayKey = today.toISOString().split("T")[0];
+  const daysKor = ["일", "월", "화", "수", "목", "금", "토"];
+  const todayDay = daysKor[today.getDay()];
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -44,14 +44,12 @@ function Attendance() {
   }, [students, loading, todayKey]);
 
   const updateAttendance = async (firestoreId, code, label) => {
-    // 👉 UI 상태 먼저 업데이트
     setAttendanceStatus((prev) => ({ ...prev, [firestoreId]: label }));
-  
     try {
       const ref = doc(db, "students-info", firestoreId);
       await updateDoc(ref, {
         attendance: {
-          [todayKey]: code, // 오늘 날짜 출석만 유지 (덮어쓰기)
+          [todayKey]: code,
         },
       });
     } catch (error) {
@@ -60,7 +58,6 @@ function Attendance() {
       alert("⚠️ 출석 상태 업데이트 실패!");
     }
   };
-  
 
   const formattedDate = today.toLocaleDateString("ko-KR", {
     month: "long",
@@ -68,26 +65,52 @@ function Attendance() {
     weekday: "short",
   });
 
-  const filteredStudents = students.filter((student) => {
-    return (
-      (selectedSchool === "" || student.school === selectedSchool) &&
-      (selectedGrade === "" || student.grade === selectedGrade) &&
-      (selectedSubject === "" ||
-        (selectedSubject === "영어" && student.english) ||
-        (selectedSubject === "수학" && student.math) ||
-        (selectedSubject === "둘 다" && student.english && student.math))
-    );
-  });
+  const getGradeValue = (school, grade) => {
+    const num = parseInt(grade);
+    if (school === "초등학교") return num;
+    if (school === "중학교") return 6 + num;
+    if (school === "고등학교") return 9 + num;
+    return 99;
+  };
+
+  const filteredStudents = students
+    .filter((student) => {
+      if (selectedFilter === "전체") return true;
+      const schedule = student.schedule || [];
+      const hasClassToday = schedule.some(
+        (s) => (s.day === todayDay || s.day === `${todayDay}_수학`) && s.start !== null && s.end !== null
+      );
+      if (!hasClassToday) return false;
+      if (selectedFilter === "영어" && !student.english) return false;
+      if (selectedFilter === "수학" && !student.math) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aVal = getGradeValue(a.school, a.grade);
+      const bVal = getGradeValue(b.school, b.grade);
+      return aVal - bVal;
+    });
 
   return (
     <div className="attendance-container">
       <h3>📅 출석 체크</h3>
       <p className="d-flex align-items-center gap-2">
         학생들의 출석 상태를 확인하고 기록할 수 있습니다.
-        <span style={{ fontSize: "14px", color: "#888" }}>
-          ({fetchStatus})
-        </span>
+        <span style={{ fontSize: "20px", color: "#888" }}>({fetchStatus})</span>
       </p>
+
+      <div className="mb-3">
+        <Form.Select
+          value={selectedFilter}
+          onChange={(e) => setSelectedFilter(e.target.value)}
+          style={{ maxWidth: "200px", marginLeft: "10px" }}
+        >
+          <option value="수업 있는 학생만">수업 있는 학생만</option>
+          <option value="전체">전체</option>
+          <option value="영어">영어</option>
+          <option value="수학">수학</option>
+        </Form.Select>
+      </div>
 
       {loading ? (
         <p>⏳ 데이터를 불러오는 중...</p>
