@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
-import Home from "./components/Home";  
-import { FirestoreProvider } from "./context/FirestoreContext"; // FirestoreProvider
-import { db } from "./firebaseConfig"; // Firebase setting
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import Home from "./components/Home";
+import { FirestoreProvider } from "./context/FirestoreContext";
+import { db } from "./firebaseConfig";
+import { collection, getDocs, addDoc, updateDoc, doc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 const students = [
   {
@@ -28,7 +29,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",attendance:"",
+    eng_T: "T1",attendance:"", in: 240510, out: 240202,in_math: null, out_math: null,
     math_T: null
   },
   {
@@ -51,7 +52,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"",in:null, out:null, in_math: 240110, out_math: null,
     math_T: "T3"
   },
   {
@@ -74,7 +75,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"",in: 240115, out: null, in_math:240315, out_math: 250211,
     math_T: "T3"
   },
   {
@@ -97,7 +98,7 @@ const students = [
       { day: "목_수학", start: 16, end: 17 },
       { day: "금_수학", start: 14, end: 16 }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"",in: null, out:null, in_math: 240101, out_math: 250105,
     math_T: "T3"
   },
   {
@@ -120,7 +121,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",attendance:"",
+    eng_T: "T1",attendance:"",in: 240110, out: 250120,in_math: null, out_math:null,
     math_T: null
   },
   {
@@ -143,7 +144,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"",in: 240125, out: 250202,in_math: 240615, out_math:null,
     math_T: "T3"
   },
   {
@@ -166,7 +167,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"", in_math: 240130, out_math: 250218,in: null, out:null,
     math_T: "T4"
   },
   {
@@ -189,7 +190,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"", in: 240201, out: 250305,in_math: null, out_math:null,
     math_T: null
   },
   {
@@ -212,7 +213,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"", in: 240205, out: 250317,in_math: 250201, out_math:null,
     math_T: "T3"
   },
   {
@@ -235,7 +236,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"",in_math: 240210, out_math: 250404,in: null, out:null,
     math_T: "T3"
   },
   {
@@ -258,7 +259,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"",in: 240215, out: 250429,in_math: null, out_math:null,
     math_T: null
   },
   {
@@ -281,7 +282,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: 16, end: 18 }
     ],
-    eng_T: "T1",attendance:"",
+    eng_T: "T1",attendance:"",in: 240315, out: null,in_math: 250301, out_math:null,
     math_T: "T3"
   },
   {
@@ -304,7 +305,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"",in_math: 240310, out_math: null,in: null, out:null,
     math_T: "T3"
   },
   {
@@ -327,7 +328,7 @@ const students = [
       { day: "목_수학", start: null, end: null },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T2",attendance:"",
+    eng_T: "T2",attendance:"", in: 240305, out: null ,in_math: null, out_math:null,
     math_T: null
   },
   {
@@ -350,7 +351,7 @@ const students = [
       { day: "목_수학", start: 15, end: 17 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: "T1",attendance:"",
+    eng_T: "T1",attendance:"", in: 240301, out: null,in_math: 240102, out:null,
     math_T: "T4"
   },
   {
@@ -373,7 +374,7 @@ const students = [
       { day: "목_수학", start: 16, end: 18 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"", in_math: 240215, out_math: null,in: null, out:null,
     math_T: "T3"
   },
   {
@@ -396,7 +397,7 @@ const students = [
       { day: "목_수학", start: 16, end: 17 },
       { day: "금_수학", start: null, end: null }
     ],
-    eng_T: null,attendance:"",
+    eng_T: null,attendance:"", in_math: 240210, out_math: null, in: null, out:null,
     math_T: "T3"
   }
 ];
@@ -405,35 +406,38 @@ const students = [
 const uploadStudentsToFirestore = async () => {
   try {
     const studentsCollection = collection(db, "students-info");
-
-    // Firestore에 저장된 모든 학생 데이터를 가져오기
     const querySnapshot = await getDocs(studentsCollection);
 
-    // Firestore에서 이미 존재하는 ID 목록 만들기
-    const existingIds = new Set(querySnapshot.docs.map(doc => doc.data().id));
-
-    let addedCount = 0; // 추가된 학생 수 확인용
+    const docsMap = {};
+    querySnapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      docsMap[data.id] = docSnap.id; // 실제 Firestore 문서 ID를 저장
+    });
 
     for (const student of students) {
-      if (!existingIds.has(student.id)) { // Firestore에 없는 ID만 추가
-        await addDoc(studentsCollection, student);
-        console.log(`✅ ${student.name} (ID: ${student.id}) 추가 완료`);
-        addedCount++;
+      const firestoreId = docsMap[student.id];
+      if (firestoreId) {
+        // 🔥 기존 문서 업데이트: 필드만 추가 또는 수정
+        await updateDoc(doc(db, "students-info", firestoreId), {
+          in: student.in || null,
+          out: student.out || null,
+          in_math: student.in_math || null,
+          out_math: student.out_math || null,
+        });
+        
+        console.log(`🛠️ ${student.name} 필드 업데이트 완료`);
       } else {
-        console.log(`⚠️ ${student.name} (ID: ${student.id}) 이미 존재하여 추가하지 않음`);
+        // 존재하지 않는 경우 새로 추가
+        await addDoc(studentsCollection, student);
+        console.log(`✅ ${student.name} 새로 추가 완료`);
       }
     }
 
-    if (addedCount > 0) {
-      console.log(` ${addedCount}명의 학생 데이터가 Firestore에 추가되었습니다.`);
-    } else {
-      console.log("⚠️ Firestore에 모든 데이터가 이미 존재합니다. 추가하지 않습니다.");
-    }
+    console.log("🎉 모든 데이터 처리 완료");
   } catch (error) {
-    console.error("❌ Firestore 업로드 중 오류 발생:", error);
+    console.error("❌ Firestore 업데이트 오류:", error);
   }
 };
-
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -446,10 +450,9 @@ function App() {
       }
       setIsReady(true);
     });
-  
+
     return () => unsubscribe();
   }, []);
-  
 
   if (!isReady) return <div>로딩 중...</div>;
 

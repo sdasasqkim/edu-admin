@@ -9,43 +9,29 @@ function Dashboard() {
   const [notices, setNotices] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [students, setStudents] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [viewMode, setViewMode] = useState(null);
   const [popup, setPopup] = useState({ visible: false, data: [], title: "" });
-  const containerRef = useRef(null); // 컨테이너 참조
+  const containerRef = useRef(null);
 
   const hours = [13, 14, 15, 16, 17, 18, 19];
   const days = ["월", "화", "수", "목", "금"];
-
   const teacherMap = {
-    A: ["T1"],
-    B: ["T2"],
-    C: ["T3"],
-    D: ["T4"]
+    A: ["T1"], B: ["T2"], C: ["T3"], D: ["T4"]
   };
-
-  const chartData = [
-    { month: "11", Total: 40, English: 18, Math: 22 },
-    { month: "12", Total: 42, English: 20, Math: 22 },
-    { month: "1", Total: 47, English: 23, Math: 24 },
-    { month: "2", Total: 48, English: 24, Math: 24 },
-    { month: "3", Total: 50, English: 26, Math: 24 }
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
       const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
       const snapshot = await getDocs(q);
-      const fetchedNotices = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
+      const fetchedNotices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setNotices(fetchedNotices);
       setUnreadCount(fetchedNotices.length);
 
       const studentSnapshot = await getDocs(collection(db, "students-info"));
       const studentData = studentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setStudents(studentData);
+      generateChartData(studentData);
     };
 
     fetchData();
@@ -106,6 +92,47 @@ function Dashboard() {
     return data;
   };
 
+  const generateChartData = (students) => {
+    const now = new Date();
+    const baseDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const months = Array.from({ length: 4 }, (_, i) => {
+      const d = new Date(baseDate);
+      d.setMonth(d.getMonth() - 3 + i);
+      return d;
+    });
+
+    const data = months.map((dateObj) => {
+      const month = dateObj.getMonth() + 1;
+      const year = dateObj.getFullYear();
+      const monthStr = `${month}`.padStart(2, "0");
+      const cutoff = Number(`${year}${monthStr}01`.slice(2));
+
+      let total = 0, english = 0, math = 0;
+
+      students.forEach((s) => {
+        if (s.english && s.in && s.in <= cutoff && (!s.out || s.out >= cutoff)) {
+          english++;
+          total++;
+        }
+        if (s.math && s.in_math && s.in_math <= cutoff && (!s.out_math || s.out_math >= cutoff)) {
+          math++;
+          total++;
+        }
+      });
+
+      return {
+        month: monthStr,
+        Total: total,
+        English: english,
+        Math: math,
+      };
+    });
+
+    setChartData(data);
+  };
+
+  const getMaxY = (key) => Math.max(...chartData.map(d => d[key] || 0)) + 2;
+
   const renderTimetable = () => (
     <table className="schedule-table mt-4">
       <thead>
@@ -136,20 +163,31 @@ function Dashboard() {
         <p>여기는 대시보드입니다. 전체적인 요약 정보를 볼 수 있습니다.</p>
 
         <Row className="mb-4">
-          {["Total", "English", "Math"].map((key, i) => (
+          {[
+            { key: "Total", label: "전체", color: "blue" },
+            { key: "English", label: "영어", color: "red" },
+            { key: "Math", label: "수학", color: "green" },
+          ].map(({ key, label, color }) => (
             <Col md={4} key={key}>
               <div className="chart-box">
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
-                    <YAxis />
+                    <YAxis domain={[0, getMaxY(key)]} />
                     <Tooltip />
                     <Legend align="center" verticalAlign="bottom" />
-                    <Line type="monotone" dataKey={key} stroke={["blue", "red", "green"][i]} strokeWidth={2} />
+                    <Line
+                      type="monotone"
+                      dataKey={key}
+                      stroke={color}
+                      strokeWidth={2}
+                      isAnimationActive={false} // 선이 왼쪽에서 그려지지 않도록
+                      className="fade-line"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
-                <p className="chart-label">{key === "Total" ? "전체" : key === "English" ? "영어" : "수학"} 수강생 현황</p>
+                <p className="chart-label">{label} 수강생 현황</p>
               </div>
             </Col>
           ))}
