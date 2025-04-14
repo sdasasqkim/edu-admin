@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Button, ListGroup, Modal } from "react-bootstrap";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
-import { collection, getDocs } from "firebase/firestore";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -11,6 +11,7 @@ function Dashboard() {
   const [students, setStudents] = useState([]);
   const [viewMode, setViewMode] = useState(null);
   const [popup, setPopup] = useState({ visible: false, data: [], title: "" });
+  const containerRef = useRef(null); // 컨테이너 참조
 
   const hours = [13, 14, 15, 16, 17, 18, 19];
   const days = ["월", "화", "수", "목", "금"];
@@ -22,7 +23,6 @@ function Dashboard() {
     D: ["T4"]
   };
 
-  //대시보드 월별 수강생 현황, 추후 스키마 변경 후 데이터 불러와서 그래프 그릴 예정
   const chartData = [
     { month: "11", Total: 40, English: 18, Math: 22 },
     { month: "12", Total: 42, English: 20, Math: 22 },
@@ -32,17 +32,33 @@ function Dashboard() {
   ];
 
   useEffect(() => {
-    const storedNotices = JSON.parse(localStorage.getItem("notices")) || [];
-    setNotices(storedNotices);
-    setUnreadCount(storedNotices.length);
+    const fetchData = async () => {
+      const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
+      const snapshot = await getDocs(q);
+      const fetchedNotices = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-    const fetchStudents = async () => {
-      const snapshot = await getDocs(collection(db, "students-info"));
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setStudents(data);
+      setNotices(fetchedNotices);
+      setUnreadCount(fetchedNotices.length);
+
+      const studentSnapshot = await getDocs(collection(db, "students-info"));
+      const studentData = studentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setStudents(studentData);
     };
-    fetchStudents();
+
+    fetchData();
   }, []);
+
+  const handleViewModeClick = (mode) => {
+    setViewMode(mode);
+    setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
+      }
+    }, 100);
+  };
 
   const getStudentCount = (day, hour) => {
     if (!viewMode) return 0;
@@ -114,68 +130,44 @@ function Dashboard() {
   );
 
   return (
-    <div className="dashboard-scroll-container">
+    <div className="dashboard-scroll-wrapper" ref={containerRef}>
       <Container>
         <h3>📊 대시보드</h3>
         <p>여기는 대시보드입니다. 전체적인 요약 정보를 볼 수 있습니다.</p>
 
-        {/* 수강생 현황 */}
         <Row className="mb-4">
-          <Col md={4}>
-            <div className="chart-box">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend align="center" verticalAlign="bottom" />
-                  <Line type="monotone" dataKey="Total" stroke="blue" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-              <p className="chart-label">전체 수강생 현황</p>
-            </div>
-          </Col>
-          <Col md={4}>
-            <div className="chart-box">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend align="center" verticalAlign="bottom" />
-                  <Line type="monotone" dataKey="English" stroke="red" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-              <p className="chart-label">영어 수강생 현황</p>
-            </div>
-          </Col>
-          <Col md={4}>
-            <div className="chart-box">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend align="center" verticalAlign="bottom" />
-                  <Line type="monotone" dataKey="Math" stroke="green" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-              <p className="chart-label">수학 수강생 현황</p>
-            </div>
-          </Col>
+          {["Total", "English", "Math"].map((key, i) => (
+            <Col md={4} key={key}>
+              <div className="chart-box">
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={chartData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend align="center" verticalAlign="bottom" />
+                    <Line type="monotone" dataKey={key} stroke={["blue", "red", "green"][i]} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <p className="chart-label">{key === "Total" ? "전체" : key === "English" ? "영어" : "수학"} 수강생 현황</p>
+              </div>
+            </Col>
+          ))}
         </Row>
 
-        {/* 공지사항 */}
-        <h5>📢 공지사항 <span className="text-danger fw-bold">{unreadCount}</span></h5>
+        <div className="d-flex align-items-center justify-content-between">
+          <h5>
+            📢 공지사항 <span className="text-danger fw-bold">{unreadCount}</span>
+            <span className="text-muted small ms-2">※ 최대 4개 표시</span>
+          </h5>
+        </div>
+
         <ListGroup className="mb-4">
           {notices.length > 0 ? (
             notices.slice(0, 4).map((notice, index) => (
               <ListGroup.Item key={index}>
                 <strong>{notice.text}</strong><br />
-                <small>{notice.author} - {notice.timestamp}</small>
+                <small>{notice.author} - {notice.timestamp.toDate().toLocaleString("ko-KR")}</small>
               </ListGroup.Item>
             ))
           ) : (
@@ -183,22 +175,21 @@ function Dashboard() {
           )}
         </ListGroup>
 
-        {/* 시간표 버튼 */}
         <h5 className="d-flex align-items-center mb-4">
           📅 과목 별 시간표
           <div className="ms-5 d-flex gap-4">
-            <Button variant="danger" onClick={() => setViewMode("english")}>영어</Button>
-            <Button variant="primary" onClick={() => setViewMode("math")}>수학</Button>
+            <Button variant="danger" onClick={() => handleViewModeClick("english")}>영어</Button>
+            <Button variant="primary" onClick={() => handleViewModeClick("math")}>수학</Button>
           </div>
         </h5>
 
         <h5 className="d-flex align-items-center">
           🧑‍🏫 선생님 별 시간표
           <div className="ms-5 d-flex gap-4">
-            <Button variant="success" onClick={() => setViewMode("A")}>선생님A</Button>
-            <Button variant="success" onClick={() => setViewMode("B")}>선생님B</Button>
-            <Button variant="success" onClick={() => setViewMode("C")}>선생님C</Button>
-            <Button variant="success" onClick={() => setViewMode("D")}>선생님D</Button>
+            <Button variant="success" onClick={() => handleViewModeClick("A")}>선생님A</Button>
+            <Button variant="success" onClick={() => handleViewModeClick("B")}>선생님B</Button>
+            <Button variant="success" onClick={() => handleViewModeClick("C")}>선생님C</Button>
+            <Button variant="success" onClick={() => handleViewModeClick("D")}>선생님D</Button>
           </div>
         </h5>
 
