@@ -23,7 +23,7 @@ A smart web-based student management system for academies, built with React and 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/edu-admin.git
+git clone https://github.com/sdasasqkim/edu-admin.git
 cd edu-admin
 ```
 
