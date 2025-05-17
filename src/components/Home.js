@@ -37,7 +37,7 @@ function Home() {
           <div className="logo-wrapper">
             <h4 className="logo-text">
               <span className="edu-text">Edu</span>
-              <span className="manage-text">Manage</span>
+              <span className="manage-text">Manager</span>
             </h4>
           </div>
         </Col>
