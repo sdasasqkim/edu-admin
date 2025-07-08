@@ -2,6 +2,8 @@
 
 A smart web-based student management system for academies, built with React and Firebase.
 
+![alt text](메인화면.png)
+
 ## 🔧 Technologies Used
 
 - **React** (Create React App)
